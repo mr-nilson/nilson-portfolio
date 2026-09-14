@@ -9,6 +9,52 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .contact-form {
+      width: 100%;
+      max-width: 520px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .contact-form input,
+    .contact-form textarea {
+      box-sizing: border-box;
+      width: 100%;
+      padding: 15px;
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      font: inherit;
+      outline: none;
+    }
+
+    .contact-form textarea {
+      resize: vertical;
+    }
+
+    .contact-form input:focus,
+    .contact-form textarea:focus {
+      border-color: #00e5ff;
+    }
+
+    .contact-form button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .contact-form button:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    #formStatus {
+      min-height: 24px;
+      margin: 0;
+    }
+  </style>
 </head>
 <body>
   <div class="bg-grid"></div>
@@ -200,7 +246,14 @@ Cybersecurity / DevSecOps
         <h2>Have a project in mind?</h2>
         <p>Let's talk about how AI and automation can improve your workflow.</p>
       </div>
-      <a class="btn primary" href="mailto:your-email@example.com">Start a conversation ↗</a>
+
+      <form id="contactForm" class="contact-form">
+        <input type="text" id="name" name="name" placeholder="Your name" required>
+        <input type="email" id="email" name="email" placeholder="Your email" required>
+        <textarea id="message" name="message" placeholder="Tell me about your project" rows="5" required></textarea>
+        <button class="btn primary" type="submit">Send message ↗</button>
+        <p id="formStatus" aria-live="polite"></p>
+      </form>
     </section>
   </main>
 
@@ -212,5 +265,54 @@ Cybersecurity / DevSecOps
   </footer>
 
   <script src="script.js"></script>
+  <script>
+    const contactForm = document.getElementById("contactForm");
+    const formStatus = document.getElementById("formStatus");
+
+    contactForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const submitButton = contactForm.querySelector('button[type="submit"]');
+      submitButton.disabled = true;
+      formStatus.textContent = "Sending...";
+
+      const formData = {
+        name: document.getElementById("name").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        message: document.getElementById("message").value.trim()
+      };
+
+      try {
+        // Replace the text below with your n8n Production webhook URL.
+        const webhookUrl = "https://n8n.srv1106977.hstgr.cloud/webhook-test/portfolio-contact";
+
+        if (webhookUrl.includes("PASTE_YOUR")) {
+          throw new Error("Add your n8n Production webhook URL first.");
+        }
+
+        const response = await fetch(webhookUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(formData)
+        });
+
+        if (!response.ok) {
+          throw new Error("Webhook request failed.");
+        }
+
+        formStatus.textContent = "Thank you! Your message has been sent.";
+        contactForm.reset();
+      } catch (error) {
+        console.error(error);
+        formStatus.textContent = error.message.includes("Production webhook")
+          ? error.message
+          : "Sorry, the message could not be sent. Please try again.";
+      } finally {
+        submitButton.disabled = false;
+      }
+    });
+  </script>
 </body>
 </html>
